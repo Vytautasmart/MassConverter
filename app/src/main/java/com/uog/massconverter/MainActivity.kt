@@ -1,8 +1,6 @@
 package com.uog.massconverter
 
-import android.health.connect.datatypes.units.Mass
 import android.icu.text.NumberFormat
-import android.icu.util.Output
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -18,6 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -88,19 +91,10 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(text = "Input Mass Unit")
-            Row {
-                RadioButton(selected = inputMassUnit == "kg", onClick = { inputMassUnit = "kg" })
-                Text(text = "Kilograms")
-                Spacer(modifier = Modifier.width(8.dp))
+            Dropdown()
 
-                RadioButton(selected = inputMassUnit == "lbs", onClick = { inputMassUnit = "lbs" })
-                Text(text = "Pounds")
-                Spacer(modifier = Modifier.width(8.dp))
+            Dropdown()
 
-                RadioButton(selected = inputMassUnit == "st", onClick = { inputMassUnit = "st" })
-                Text(text = "Stones")
-
-            }
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(text = "Convert to Mass Unit")
@@ -177,6 +171,56 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Dropdown() {
+    val list  = listOf(
+        "Inch",
+        "foot",
+        "yard",
+        "mile"
+    )
+
+
+    var isExpanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(list[0])}
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = isExpanded,
+            onExpandedChange = { isExpanded = !isExpanded}
+        ){
+            TextField(
+                modifier = Modifier.menuAnchor(),
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
+            )
+
+            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
+                list.forEachIndexed { index, text ->
+                    DropdownMenuItem(
+                        text = { Text(text = text)},
+                        onClick = {
+                            selectedText = list[index]
+                            isExpanded = false},
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+
+            }
+        }
+        Text(text = "Currently selected: $selectedText")
+
+    }
+}
 
 
 

@@ -60,7 +60,7 @@ class MainActivity : ComponentActivity() {
         var massEntered by remember { mutableStateOf("") }
         var inputMassUnit by remember { mutableStateOf("") }
         var outputMassUnit by remember { mutableStateOf("") }
-        var convertedValues by remember { mutableStateOf(arrayOf("","","")) }
+        var convertedValue by remember { mutableStateOf("") }
         val numberFormat = remember {
             NumberFormat.getInstance().apply {
                 maximumFractionDigits = 2
@@ -90,35 +90,19 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Input Mass Unit")
-            Dropdown()
+            DropdownInputMass()
 
-            Dropdown()
+            DropdownOutputMass()
 
             Spacer(modifier = Modifier.width(16.dp))
-
-            Text(text = "Convert to Mass Unit")
-            Row {
-                RadioButton(selected = outputMassUnit == "kg", onClick = { outputMassUnit = "kg" })
-                Text(text = "Kilograms")
-                Spacer(modifier = Modifier.width(8.dp))
-
-                RadioButton(selected = outputMassUnit == "lbs", onClick = { outputMassUnit = "lbs" })
-                Text(text = "Pounds")
-                Spacer(modifier = Modifier.width(8.dp))
-
-                RadioButton(selected = outputMassUnit == "st", onClick = { outputMassUnit = "st" })
-                Text(text = "Stones")
-
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Button(onClick =  {
                 val mass = massEntered.toDoubleOrNull()
 
+                convertedValue = (massEntered * inputMassUnit)/outputMassUnit
+
                 if (mass != null && mass > 0) {
-                    convertedValues = converter(numberFormat, mass, inputMassUnit, outputMassUnit)
+
                 } else {
                     Toast.makeText(context, "Mass must be greater than 0",
                         Toast.LENGTH_SHORT).show()
@@ -127,18 +111,13 @@ class MainActivity : ComponentActivity() {
                 Text(text = "Convert")
 
             }
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(text = "Converted Mass: ${convertedValues[0]}")
-            Text(text = "Weight in Newtons: ${convertedValues[1]}")
-            Text(text = "Weight in Kilonewtons: ${convertedValues[2]}")
         }
     }
 
 
     private fun converter(numberFormat: NumberFormat, mass: Double, inputUnit: String, outputUnit: String) : Array<String> {
 
-        val conversionsToBeReturned = arrayOf<String>("","","")
+        val conversionToBeReturned = arrayOf<String>("","","")
 
         val massInKg = when (inputUnit) {
             "kg" -> mass
@@ -154,11 +133,7 @@ class MainActivity : ComponentActivity() {
             else -> ""
         }
 
-        conversionsToBeReturned[0] = converted
-        conversionsToBeReturned[1] = "${numberFormat.format(massInKg * gravity)} N"
-        conversionsToBeReturned[2] = "${numberFormat.format(massInKg * gravity / 1000)} kN"
-
-        return conversionsToBeReturned
+        return conversionToBeReturned
     }
 
 
@@ -174,17 +149,10 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Dropdown() {
-    val list  = listOf(
-        "Inch",
-        "foot",
-        "yard",
-        "mile"
-    )
-
+fun DropdownInputMass() {
 
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(list[0])}
+    var selectedText by remember { mutableStateOf(list.keys.first())}
 
     Column(
         modifier = Modifier
@@ -205,22 +173,64 @@ fun Dropdown() {
             )
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
-                list.forEachIndexed { index, text ->
+                list.keys.forEachIndexed { index, text ->
                     DropdownMenuItem(
                         text = { Text(text = text)},
                         onClick = {
-                            selectedText = list[index]
+                            selectedText = text
                             isExpanded = false},
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                     )
                 }
-
             }
         }
-        Text(text = "Currently selected: $selectedText")
+        val inputMassUnit = list[selectedText] ?: 0 // Default to 0 if not found
 
+        Text(text = "Currently selected: $selectedText with value: $inputMassUnit")
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DropdownOutputMass() {
+
+    var isExpanded by remember { mutableStateOf(false) }
+    var selectedText by remember { mutableStateOf(list.keys.first())}
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = isExpanded,
+            onExpandedChange = { isExpanded = !isExpanded}
+        ){
+            TextField(
+                modifier = Modifier.menuAnchor(),
+                value = selectedText,
+                onValueChange = {},
+                readOnly = true,
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
+            )
+
+            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
+                list.keys.forEachIndexed { index, text ->
+                    DropdownMenuItem(
+                        text = { Text(text = text)},
+                        onClick = {
+                            selectedText = text
+                            isExpanded = false},
+                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                    )
+                }
+            }
+        }
+        val outputMassUnit = list[selectedText] ?: 0 // Default to 0 if not found
+
+        Text(text = "Currently selected: $selectedText with value: $outputMassUnit")
+    }
+}
 
 

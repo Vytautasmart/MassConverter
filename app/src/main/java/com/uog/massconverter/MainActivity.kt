@@ -1,13 +1,11 @@
 package com.uog.massconverter
 
-import android.icu.text.NumberFormat
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -41,9 +38,6 @@ import com.uog.massconverter.ui.theme.MassConverterTheme
 
 class MainActivity : ComponentActivity() {
 
-    private val conversionToPounds : Double = 2.20462262 //lbs to kg
-    private val conversionToStones : Double = 0.15747304 //lbs to kg
-    private val gravity : Double = 9.81 //m/s^2
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,16 +52,17 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun WeightConverterApp() {
         var massEntered by remember { mutableStateOf("") }
-        var inputMassUnit by remember { mutableStateOf("") }
-        var outputMassUnit by remember { mutableStateOf("") }
+        val inputMassUnit by remember { mutableStateOf("") }
+        val outputMassUnit by remember { mutableStateOf("") }
         var convertedValue by remember { mutableStateOf("") }
+        /*
         val numberFormat = remember {
             NumberFormat.getInstance().apply {
                 maximumFractionDigits = 2
                 minimumFractionDigits = 2
             }
         }
-
+*/
         val context = LocalContext.current
         Column(modifier = Modifier
             .padding(16.dp)
@@ -97,46 +92,25 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(onClick =  {
-                if (massEntered.isNotEmpty() && list.containsKey(inputMassUnit) && list.containsKey(outputMassUnit)) {
-                    val inputValue =
-                        massEntered.toDoubleOrNull() ?: 0.0 // Parse the massEntered to a Double
-                    val inputUnitValue =
-                        list[inputMassUnit] ?: 1        // Get the integer value for inputMassUnit
-                    val outputUnitValue = list[outputMassUnit] ?: 1
 
-                    convertedValue = (inputValue * inputUnitValue / outputUnitValue).toString()
+                if (massEntered.isNotEmpty() && list.containsKey(inputMassUnit) && list.containsKey(outputMassUnit)) {
+                    val inputValue = massEntered.toDoubleOrNull() ?: 0.0 // Parse the massEntered to a Double
+                    val inputUnitValue = list[inputMassUnit] ?: 1        // Get the integer value for inputMassUnit
+                    val outputUnitValue = list[outputMassUnit] ?: 1      // Get the integer value for outputMassUnit
+
+                    // Perform the conversion
+                    convertedValue = (inputValue * inputUnitValue / outputUnitValue).toString()       //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
+
+
                 } else {
                     Toast.makeText(context, "Mass must be greater than 0",
                         Toast.LENGTH_SHORT).show()
                 }
-
             }) {
                 Text(text = "Convert")
+
             }
-            Text("Converted value: $convertedValue")
         }
-    }
-
-
-    private fun converter(numberFormat: NumberFormat, mass: Double, inputUnit: String, outputUnit: String) : Array<String> {
-
-        val conversionToBeReturned = arrayOf<String>("","","")
-
-        val massInKg = when (inputUnit) {
-            "kg" -> mass
-            "lbs" -> mass / conversionToPounds
-            "st" -> mass / conversionToStones
-            else -> 0.0
-        }
-
-        val converted = when (outputUnit){
-            "kg" -> "$massInKg kg"
-            "lbs" -> "${numberFormat.format(mass * conversionToPounds)} lbs"
-            "st" -> "${numberFormat.format(mass * conversionToStones)} stone"
-            else -> ""
-        }
-
-        return conversionToBeReturned
     }
 
 
@@ -176,7 +150,7 @@ fun DropdownInputMass() {
             )
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
-                list.keys.forEachIndexed { index, text ->
+                list.keys.forEachIndexed { _, text ->
                     DropdownMenuItem(
                         text = { Text(text = text)},
                         onClick = {
@@ -219,7 +193,7 @@ fun DropdownOutputMass() {
             )
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
-                list.keys.forEachIndexed { index, text ->
+                list.keys.forEachIndexed { _, text ->
                     DropdownMenuItem(
                         text = { Text(text = text)},
                         onClick = {

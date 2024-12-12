@@ -97,20 +97,23 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(onClick =  {
-                val mass = massEntered.toDoubleOrNull()
+                if (massEntered.isNotEmpty() && list.containsKey(inputMassUnit) && list.containsKey(outputMassUnit)) {
+                    val inputValue =
+                        massEntered.toDoubleOrNull() ?: 0.0 // Parse the massEntered to a Double
+                    val inputUnitValue =
+                        list[inputMassUnit] ?: 1        // Get the integer value for inputMassUnit
+                    val outputUnitValue = list[outputMassUnit] ?: 1
 
-                convertedValue = (massEntered * inputMassUnit)/outputMassUnit
-
-                if (mass != null && mass > 0) {
-
+                    convertedValue = (inputValue * inputUnitValue / outputUnitValue).toString()
                 } else {
                     Toast.makeText(context, "Mass must be greater than 0",
                         Toast.LENGTH_SHORT).show()
                 }
+
             }) {
                 Text(text = "Convert")
-
             }
+            Text("Converted value: $convertedValue")
         }
     }
 

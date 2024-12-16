@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.uog.massconverter.ui.theme.MassConverterTheme
+import java.text.DecimalFormat
 
 
 class MainActivity : ComponentActivity() {
@@ -52,17 +54,11 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun WeightConverterApp() {
         var massEntered by remember { mutableStateOf("") }
-        val inputMassUnit by remember { mutableStateOf("") }
-        val outputMassUnit by remember { mutableStateOf("") }
-        var convertedValue by remember { mutableStateOf("") }
-        /*
-        val numberFormat = remember {
-            NumberFormat.getInstance().apply {
-                maximumFractionDigits = 2
-                minimumFractionDigits = 2
-            }
-        }
-*/
+        var inputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
+        var outputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
+        var convertedValue by remember { mutableDoubleStateOf(0.0) }
+        val decimalFormat = DecimalFormat("#.00")
+
         val context = LocalContext.current
         Column(modifier = Modifier
             .padding(16.dp)
@@ -85,22 +81,24 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            DropdownInputMass()
+            DropdownInputMass(
+                units = massUnits,
+                selectedMassUnit = inputMassUnit,
+                onUnitSelected = {inputMassUnit = it})
 
-            DropdownOutputMass()
+            DropdownOutputMass(
+                units = massUnits,
+                selectedMassUnit = outputMassUnit,
+                onUnitSelected = {outputMassUnit = it})
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Button(onClick =  {
+                val inputValue = massEntered.toDoubleOrNull() ?: 0.0
+                if (inputValue> 0 && inputMassUnit != null && outputMassUnit != null) {
 
-                if (massEntered.isNotEmpty() && list.containsKey(inputMassUnit) && list.containsKey(outputMassUnit)) {
-                    val inputValue = massEntered.toDoubleOrNull() ?: 0.0 // Parse the massEntered to a Double
-                    val inputUnitValue = list[inputMassUnit] ?: 1        // Get the integer value for inputMassUnit
-                    val outputUnitValue = list[outputMassUnit] ?: 1      // Get the integer value for outputMassUnit
-
-                    // Perform the conversion
-                    convertedValue = (inputValue * inputUnitValue / outputUnitValue).toString()       //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
-
+                    // Performs the conversion
+                    convertedValue = (inputValue * inputMassUnit!!.value / outputMassUnit!!.value)  //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
 
                 } else {
                     Toast.makeText(context, "Mass must be greater than 0",
@@ -108,8 +106,9 @@ class MainActivity : ComponentActivity() {
                 }
             }) {
                 Text(text = "Convert")
-
             }
+            Text(text = "Converted value: ${String.format("%.2f", convertedValue)}")
+
         }
     }
 
@@ -126,10 +125,12 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownInputMass() {
+fun DropdownInputMass(
+    units: List<MassUnit>,
+    selectedMassUnit: MassUnit?,
+    onUnitSelected: (MassUnit) -> Unit) {
 
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(list.keys.first())}
 
     Column(
         modifier = Modifier
@@ -143,36 +144,37 @@ fun DropdownInputMass() {
         ){
             TextField(
                 modifier = Modifier.menuAnchor(),
-                value = selectedText,
-                onValueChange = {},
+                value = selectedMassUnit?.name ?: "Select Input Unit",
+                onValueChange = { },
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
             )
 
-            ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
-                list.keys.forEachIndexed { _, text ->
+            ExposedDropdownMenu(
+                expanded = isExpanded,
+                onDismissRequest = {isExpanded = false}) {
+                units.forEach { unit ->
                     DropdownMenuItem(
-                        text = { Text(text = text)},
+                        text = { Text(text = unit.name)},
                         onClick = {
-                            selectedText = text
+                            onUnitSelected(unit)
                             isExpanded = false},
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                     )
                 }
             }
         }
-        val inputMassUnit = list[selectedText] ?: 0 // Default to 0 if not found
-
-        Text(text = "Currently selected: $selectedText with value: $inputMassUnit")
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownOutputMass() {
+fun DropdownOutputMass(
+    units: List<MassUnit>,
+    selectedMassUnit: MassUnit?,
+    onUnitSelected: (MassUnit) -> Unit) {
 
     var isExpanded by remember { mutableStateOf(false) }
-    var selectedText by remember { mutableStateOf(list.keys.first())}
 
     Column(
         modifier = Modifier
@@ -186,27 +188,24 @@ fun DropdownOutputMass() {
         ){
             TextField(
                 modifier = Modifier.menuAnchor(),
-                value = selectedText,
+                value = selectedMassUnit?.name ?: "Select Output Unit",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
             )
 
             ExposedDropdownMenu(expanded = isExpanded, onDismissRequest = {isExpanded = false}) {
-                list.keys.forEachIndexed { _, text ->
+                units.forEach { unit ->
                     DropdownMenuItem(
-                        text = { Text(text = text)},
+                        text = { Text(text = unit.name)},
                         onClick = {
-                            selectedText = text
+                            onUnitSelected(unit)
                             isExpanded = false},
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
                     )
                 }
             }
         }
-        val outputMassUnit = list[selectedText] ?: 0 // Default to 0 if not found
-
-        Text(text = "Currently selected: $selectedText with value: $outputMassUnit")
     }
 }
 

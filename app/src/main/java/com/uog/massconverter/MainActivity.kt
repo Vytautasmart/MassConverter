@@ -35,7 +35,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.uog.massconverter.ui.theme.MassConverterTheme
-import java.text.DecimalFormat
 
 
 class MainActivity : ComponentActivity() {
@@ -57,7 +56,7 @@ class MainActivity : ComponentActivity() {
         var inputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
         var outputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
         var convertedValue by remember { mutableDoubleStateOf(0.0) }
-        val decimalFormat = DecimalFormat("#.00")
+
 
         val context = LocalContext.current
         Column(modifier = Modifier
@@ -107,7 +106,10 @@ class MainActivity : ComponentActivity() {
             }) {
                 Text(text = "Convert")
             }
-            Text(text = "Converted value: ${String.format("%.2f", convertedValue)}")
+            Text(modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally),
+                text = "Converted value: ${String.format("%.2f", convertedValue)} ${outputMassUnit!!.name}s")
 
         }
     }

@@ -92,7 +92,10 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            Button(onClick =  {
+            Button(modifier = Modifier
+                .padding(16.dp)
+                .align(Alignment.CenterHorizontally),
+                onClick =  {
                 val inputValue = massEntered.toDoubleOrNull() ?: 0.0
                 if (inputValue> 0 && inputMassUnit != null && outputMassUnit != null) {
 
@@ -109,7 +112,7 @@ class MainActivity : ComponentActivity() {
             Text(modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.CenterHorizontally),
-                text = "Converted value: ${String.format("%.2f", convertedValue)} ${outputMassUnit!!.name}s")
+                text = "Converted value: ${String.format("%.2f", convertedValue)}")
 
         }
     }

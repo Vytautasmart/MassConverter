@@ -5,12 +5,14 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -30,8 +32,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.uog.massconverter.ui.theme.MassConverterTheme
@@ -50,6 +54,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+
     @Composable
     fun WeightConverterApp() {
         var massEntered by remember { mutableStateOf("") }
@@ -60,10 +65,20 @@ class MainActivity : ComponentActivity() {
 
         val context = LocalContext.current
         Column(modifier = Modifier
-            .padding(16.dp)
-            .fillMaxSize()) {
+                .padding(16.dp)
+                .fillMaxSize()) {
+
+            Image(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .align(Alignment.CenterHorizontally)
+                    .size(150.dp),
+                painter = painterResource(id = R.drawable.ic_launcher),
+                contentDescription = "App Icon")
 
             Text(
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center,
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))
@@ -79,7 +94,6 @@ class MainActivity : ComponentActivity() {
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-
             DropdownInputMass(
                 units = massUnits,
                 selectedMassUnit = inputMassUnit,
@@ -91,7 +105,6 @@ class MainActivity : ComponentActivity() {
                 onUnitSelected = {outputMassUnit = it})
 
             Spacer(modifier = Modifier.width(16.dp))
-
             Button(modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.CenterHorizontally),
@@ -100,20 +113,31 @@ class MainActivity : ComponentActivity() {
                 if (inputValue> 0 && inputMassUnit != null && outputMassUnit != null) {
 
                     // Performs the conversion
-                    convertedValue = (inputValue * inputMassUnit!!.value / outputMassUnit!!.value)  //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
+                    convertedValue = (inputValue * inputMassUnit!!.value) / outputMassUnit!!.value  //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
 
-                } else {
+                } else if (inputValue < 0) {
                     Toast.makeText(context, "Mass must be greater than 0",
                         Toast.LENGTH_SHORT).show()
+                } else if (inputMassUnit == null) {
+                    Toast.makeText(context, "Please select an input Mass Unit",
+                        Toast.LENGTH_SHORT).show()
+                } else if (outputMassUnit == null) {
+                    Toast.makeText(context, "Please select an output Mass Unit",
+                        Toast.LENGTH_SHORT).show()
                 }
+
             }) {
                 Text(text = "Convert")
             }
-            Text(modifier = Modifier
-                .padding(16.dp)
-                .align(Alignment.CenterHorizontally),
-                text = "Converted value: ${String.format("%.2f", convertedValue)}")
-
+            if (convertedValue > 0) {
+                Text(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .align(Alignment.CenterHorizontally),
+                    text = "$massEntered ${inputMassUnit?.name}s is equal to " +
+                            "${formatConvertedValue(convertedValue)} ${outputMassUnit?.name}s"
+                )
+            }
         }
     }
 
@@ -148,8 +172,9 @@ fun DropdownInputMass(
             onExpandedChange = { isExpanded = !isExpanded}
         ){
             TextField(
+                label = { Text(text = "Select Input Unit")},
                 modifier = Modifier.menuAnchor(),
-                value = selectedMassUnit?.name ?: "Select Input Unit",
+                value = selectedMassUnit?.name ?: "",
                 onValueChange = { },
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
@@ -172,6 +197,8 @@ fun DropdownInputMass(
     }
 }
 
+/**
+ * */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownOutputMass(
@@ -192,8 +219,9 @@ fun DropdownOutputMass(
             onExpandedChange = { isExpanded = !isExpanded}
         ){
             TextField(
+                label = { Text(text = "Select Output Unit")},
                 modifier = Modifier.menuAnchor(),
-                value = selectedMassUnit?.name ?: "Select Output Unit",
+                value = selectedMassUnit?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
@@ -214,4 +242,11 @@ fun DropdownOutputMass(
     }
 }
 
+fun formatConvertedValue(value: Double): String {
+    return if (value >= 0.01 || value <= -0.01) {
+        String.format("%.2f", value)
+    } else {
+        value.toString()
+    }
+}
 

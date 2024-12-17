@@ -1,4 +1,4 @@
-package com.uog.massconverter
+package com.uog.lengthconverter
 
 import android.os.Bundle
 import android.widget.Toast
@@ -38,8 +38,16 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.uog.massconverter.ui.theme.MassConverterTheme
+import com.uog.lengthconverter.ui.theme.LengthConverterTheme
 
+/**
+ * Main activity class for the Length Converter app.
+ * It sets up the UI and initializes the length conversion functionality.
+ * The app works by converting a selected unit lengthEntered,
+ * take the input length, the output length, perform the conversion
+ * and return the formatted value if all the fields have been entered correctly.
+ * @author Vytautas Martuzas
+ */
 
 class MainActivity : ComponentActivity() {
 
@@ -48,18 +56,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MassConverterTheme {
-                WeightConverterApp()
+            LengthConverterTheme {
+                LengthConverterApp()
                 }
             }
         }
 
-
     @Composable
-    fun WeightConverterApp() {
-        var massEntered by remember { mutableStateOf("") }
-        var inputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
-        var outputMassUnit by remember { mutableStateOf<MassUnit?>(null) }
+    fun LengthConverterApp() {
+        var lengthEntered by remember { mutableStateOf("") }
+        var inputLengthUnit by remember { mutableStateOf<LengthUnit?>(null) }
+        var outputLengthUnit by remember { mutableStateOf<LengthUnit?>(null) }
         var convertedValue by remember { mutableDoubleStateOf(0.0) }
 
 
@@ -82,47 +89,54 @@ class MainActivity : ComponentActivity() {
                 text = stringResource(id = R.string.app_name),
                 style = MaterialTheme.typography.headlineSmall)
             Spacer(modifier = Modifier.height(16.dp))
-
+            /**
+             * TextField for the number required to convert
+             * */
             TextField(
-                value = massEntered,
-                onValueChange = {massEntered = it},
+                value = lengthEntered,
+                onValueChange = {lengthEntered = it},
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                label = { Text(text = "Enter Mass")},
+                label = { Text(text = "Enter Length")},
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
-            DropdownInputMass(
-                units = massUnits,
-                selectedMassUnit = inputMassUnit,
-                onUnitSelected = {inputMassUnit = it})
+            DropdownInputLength(
+                units = LengthUnits,
+                selectedLengthUnit = inputLengthUnit,
+                onUnitSelected = {inputLengthUnit = it})
 
-            DropdownOutputMass(
-                units = massUnits,
-                selectedMassUnit = outputMassUnit,
-                onUnitSelected = {outputMassUnit = it})
+            DropdownOutputLength(
+                units = LengthUnits,
+                selectedLengthUnit = outputLengthUnit,
+                onUnitSelected = {outputLengthUnit = it})
 
             Spacer(modifier = Modifier.width(16.dp))
+            /**
+             * The function for conversion is baked into the button
+             * */
             Button(modifier = Modifier
                 .padding(16.dp)
                 .align(Alignment.CenterHorizontally),
                 onClick =  {
-                val inputValue = massEntered.toDoubleOrNull() ?: 0.0
-                if (inputValue> 0 && inputMassUnit != null && outputMassUnit != null) {
+                val inputValue = lengthEntered.toDoubleOrNull() ?: 0.0
+                if (inputValue> 0 && inputLengthUnit != null && outputLengthUnit != null) {
 
                     // Performs the conversion
-                    convertedValue = (inputValue * inputMassUnit!!.value) / outputMassUnit!!.value  //convertedValue = (massEntered * inputMassUnit)/outputMassUnit
-
+                    convertedValue = (inputValue * inputLengthUnit!!.value) / outputLengthUnit!!.value
+                    /**
+                     * error handling, to inform on missing fields required to perform the conversion
+                     * */
                 } else if (inputValue < 0) {
-                    Toast.makeText(context, "Mass must be greater than 0",
+                    Toast.makeText(context, "Length must be greater than 0",
                         Toast.LENGTH_SHORT).show()
-                } else if (inputMassUnit == null) {
-                    Toast.makeText(context, "Please select an input Mass Unit",
+                } else if (inputLengthUnit == null) {
+                    Toast.makeText(context, "Please select an input Length Unit",
                         Toast.LENGTH_SHORT).show()
-                } else if (outputMassUnit == null) {
-                    Toast.makeText(context, "Please select an output Mass Unit",
+                } else if (outputLengthUnit == null) {
+                    Toast.makeText(context, "Please select an output Length Unit",
                         Toast.LENGTH_SHORT).show()
                 }
 
@@ -134,8 +148,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier
                         .padding(16.dp)
                         .align(Alignment.CenterHorizontally),
-                    text = "$massEntered ${inputMassUnit?.name}s is equal to " +
-                            "${formatConvertedValue(convertedValue)} ${outputMassUnit?.name}s"
+                    text = "$lengthEntered ${inputLengthUnit?.name}s is equal to " +
+                            "${formatConvertedValue(convertedValue)} ${outputLengthUnit?.name}s"
                 )
             }
         }
@@ -145,19 +159,25 @@ class MainActivity : ComponentActivity() {
     @Preview(showBackground = true)
     @Composable
     fun GreetingPreview() {
-        MassConverterTheme {
-            WeightConverterApp()
+        LengthConverterTheme {
+            LengthConverterApp()
         }
     }
 }
 
-
+/**
+ * A dropdown menu for selecting input length units.
+ *
+ * @param units List of available length units.
+ * @param selectedLengthUnit Currently selected length unit.
+ * @param onUnitSelected Callback when a unit is selected.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownInputMass(
-    units: List<MassUnit>,
-    selectedMassUnit: MassUnit?,
-    onUnitSelected: (MassUnit) -> Unit) {
+fun DropdownInputLength(
+    units: List<LengthUnit>,
+    selectedLengthUnit: LengthUnit?,
+    onUnitSelected: (LengthUnit) -> Unit) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -174,7 +194,7 @@ fun DropdownInputMass(
             TextField(
                 label = { Text(text = "Select Input Unit")},
                 modifier = Modifier.menuAnchor(),
-                value = selectedMassUnit?.name ?: "",
+                value = selectedLengthUnit?.name ?: "",
                 onValueChange = { },
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
@@ -197,14 +217,13 @@ fun DropdownInputMass(
     }
 }
 
-/**
- * */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownOutputMass(
-    units: List<MassUnit>,
-    selectedMassUnit: MassUnit?,
-    onUnitSelected: (MassUnit) -> Unit) {
+fun DropdownOutputLength(
+    units: List<LengthUnit>,
+    selectedLengthUnit: LengthUnit?,
+    onUnitSelected: (LengthUnit) -> Unit) {
 
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -221,7 +240,7 @@ fun DropdownOutputMass(
             TextField(
                 label = { Text(text = "Select Output Unit")},
                 modifier = Modifier.menuAnchor(),
-                value = selectedMassUnit?.name ?: "",
+                value = selectedLengthUnit?.name ?: "",
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)}
@@ -241,6 +260,14 @@ fun DropdownOutputMass(
         }
     }
 }
+
+/**
+ * Formats the converted value to two decimal places or returns the raw value if insignificant.
+ * For more precise conversions.
+ *
+ * @param value The value to be formatted.
+ * @return The formatted string representation of the value.
+ */
 
 fun formatConvertedValue(value: Double): String {
     return if (value >= 0.01 || value <= -0.01) {

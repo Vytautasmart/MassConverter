@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MassConverter"
+rootProject.name = "LengthConverter"
 include(":app")
  

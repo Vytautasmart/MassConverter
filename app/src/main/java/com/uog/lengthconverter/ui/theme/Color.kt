@@ -1,4 +1,4 @@
-package com.uog.massconverter.ui.theme
+package com.uog.lengthconverter.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

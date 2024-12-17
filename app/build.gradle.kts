@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.uog.massconverter"
+    namespace = "com.uog.lengthconverter"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.uog.massconverter"
+        applicationId = "com.uog.lengthconverter"
         minSdk = 24
         targetSdk = 35
         versionCode = 1

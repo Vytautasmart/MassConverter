@@ -1,4 +1,4 @@
-package com.uog.massconverter
+package com.uog.lengthconverter
 
 import org.junit.Test
 
